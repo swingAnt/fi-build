@@ -5,6 +5,8 @@
     .PaneBox{
         width: 100%;
         height: 100%;
+        position: relative;
+    float: left;
     }
     .layer{
         height: 100%;
@@ -115,5 +117,37 @@
             left: 0;
         }
     }
+    }
+  
+
+}
+.splitLine{
+    z-index: 999;
+    float: left;
+    background: #c7c7c7;
+    user-select: none;
+    width: 100%;
+    height: 2px;
+    margin: 1px 0;
+    cursor: row-resize;
+    opacity: 0.3;
+    position: relative;
+    &:hover {
+        background: #b5b1b1;
+        height: 4px;
+        margin: 0;
+    }
+
+    &.isVertical {
+        width: 2px;
+        height: 100%;
+        margin: 0 1px;
+        cursor: col-resize;
+
+        &:hover {
+            background: #b5b1b1;
+            width: 4px;
+            margin: 0;
+        }
     }
 }

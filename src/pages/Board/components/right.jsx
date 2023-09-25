@@ -1,9 +1,11 @@
 import style from "./right.module.scss"
 import { draftEvent,dropEvent ,explainDragAction,treeNodeChange,getUuid,createArea,createEmptyPane} from "@/utils";
-import { useAtom, atom ,useAtomValue,useSetAtom} from 'jotai'
+import { useAtom, atom ,useAtomValue,useSetAtom,} from 'jotai'
 import { useEffect, useState,useRef } from "react";
 import { message, Modal } from "antd";
 import _ from "lodash";
+import classnames from "classnames";
+import { atomWithImmer } from 'jotai-immer'
 
 const confirm = Modal.confirm;
 const BORDER_WIDTH = 0;
@@ -17,10 +19,230 @@ const treeAtom = atom([
       childList: [],
   },
 ])
+const domAtom = atomWithImmer({
+  analysisWidth: 0,
+  analysisHeight: 0,
+  draggable: true,
+  positions: {},
+  width: 0,
+  height: 0,
+  left: 0,
+  top: 0,
+  chooseArea:""
+})
 const dragAtom = atom(true)
  const DropBoard = () => {
   const [tree, setTree] = useAtom(treeAtom); 
+  const [setting, setSetting] = useAtom(domAtom)
 
+ //更新双方边距
+ const resizePane = (firstId, secondId, value, isVertical) => {
+    let firstData, secondData, firstIndex, secondIndex, firstArr, secondArr;
+    let nextLayouts = JSON.parse(JSON.stringify(tree)) ;
+
+    treeNodeChange(nextLayouts, firstId, (item, index, arr) => {
+        firstData = item;
+        firstIndex = index;
+        firstArr = arr;
+    });
+    treeNodeChange(nextLayouts, secondId, (items, index, arr) => {
+        secondData = items;
+        secondIndex = index;
+        secondArr = arr;
+    });
+
+
+    if (firstData && secondData) {
+        if (isVertical) {
+            firstData.width = value;
+            secondData.width = 100 - value;
+        } else {
+            firstData.height = value;
+            secondData.height = 100 - value;
+        }
+    }
+
+    setTree(nextLayouts)
+
+};
+//内部拖入
+const  onMoveArea = (sourceConId, currentConId, position) => {
+    console.log("onMoveArea");
+    let nextLayouts = JSON.parse(JSON.stringify(tree)) ;
+    const { isCover, isAdd, isFirst, isVertical } = explainDragAction(
+        position
+    );
+    if (isCover) {
+        let firstData,
+            secondData,
+            firstIndex,
+            secondIndex,
+            firstArr,
+            secondArr;
+        treeNodeChange(nextLayouts, currentConId, (item, index, arr) => {
+            firstData = item;
+            firstIndex = index;
+            firstArr = arr;
+        });
+        treeNodeChange(nextLayouts, sourceConId, (items, index, arr) => {
+            secondData = items;
+            secondIndex = index;
+            secondArr = arr;
+        });
+        if (firstData && secondData) {
+            const data1 = JSON.parse(JSON.stringify(firstData));
+            const data2 = JSON.parse(JSON.stringify(secondData));
+            console.log("data1", data1);
+            console.log("data2", data2);
+            if (firstData.pid === secondData.pid) {
+                console.log("firstData", firstData);
+                console.log("secondData", secondData);
+                let nodes;
+                treeNodeChange(
+                    nextLayouts,
+                    data1.pid,
+                    (items, index, arr) => {
+                        nodes = items;
+                        nodes.childList = secondData.childList;
+                    }
+                );
+            } else {
+                //
+                secondArr.splice(secondIndex, 1);
+                let nodes;
+                console.log("secondData", secondData);
+                treeNodeChange(
+                    nextLayouts,
+                    secondData.pid,
+                    (items, index, arr) => {
+                        nodes = items;
+                        console.log("nodes", nodes);
+                        if (nodes) {
+                            nodes.childList = secondArr[0].childList;
+                            nodes.childList.forEach(
+                                (res) => (res.pid = secondData.pid)
+                            );
+                        }
+                    }
+                );
+                console.log("secondArr", secondArr);
+                firstData.childList = secondData.childList;
+            }
+        }
+    } else if (isAdd) {
+        const paneWidth = isVertical ? 100 : 50;
+        const paneHeight = isVertical ? 50 : 100;
+        console.log("isVertical", isVertical);
+        const firstPaneId = getUuid();
+        const secondPaneId = getUuid();
+        let firstData,
+            secondData,
+            firstIndex,
+            secondIndex,
+            firstArr,
+            secondArr;
+       treeNodeChange(nextLayouts, currentConId, (item, index, arr) => {
+            firstData = item;
+            firstIndex = index;
+            firstArr = arr;
+        });
+        treeNodeChange(nextLayouts, sourceConId, (items, index, arr) => {
+            secondData = items;
+            secondIndex = index;
+            secondArr = arr;
+        });
+        if (firstData && secondData) {
+            const data1 = JSON.parse(JSON.stringify(firstData));
+            const data2 = JSON.parse(JSON.stringify(secondData));
+            console.log("data1", data1);
+            console.log("data2", data2);
+            if (firstData.pid === secondData.pid) {
+                console.log("paneWidth", paneWidth);
+                console.log("paneHeight", paneHeight);
+
+                firstData.width = paneWidth;
+                firstData.height = paneHeight;
+                secondData.width = paneWidth;
+                secondData.height = paneHeight;
+                let nodes;
+                treeNodeChange(
+                    nextLayouts,
+                    data1.pid,
+                    (items, index, arr) => {
+                        nodes = items;
+                        nodes.childList = [];
+                    }
+                );
+                if (isFirst) {
+                    nodes.childList.push(secondData, firstData);
+                } else {
+                    nodes.childList.push(firstData, secondData);
+                }
+                console.log("nodes", nodes);
+                // firstData.childList = data2.childList;
+                // secondData.childList = data1.childList;
+            } else {
+                //
+                secondArr.splice(secondIndex, 1);
+                let nodes;
+                console.log("secondData", secondData);
+               treeNodeChange(
+                nextLayouts,
+                    secondData.pid,
+                    (items, index, arr) => {
+                        const item = JSON.parse(JSON.stringify(items));
+                        nodes = items;
+                        console.log("nodes", nodes);
+                        if (nodes) {
+                            nodes.childList = secondArr[0].childList;
+                            nodes.childList.forEach(
+                                (res) => (res.pid = secondData.pid)
+                            );
+                        }
+                    }
+                );
+                console.log("secondArr", secondArr);
+                firstData.childList = [];
+                firstData.childList[0] = createEmptyPane(
+                    secondPaneId,
+                    paneWidth,
+                    paneHeight,
+                    firstData.id,
+                    data1.childList[0].type
+                );
+                if (isFirst) {
+                    firstData.childList.unshift(
+                        createEmptyPane(
+                            firstPaneId,
+                            paneWidth,
+                            paneHeight,
+                            firstData.id,
+                            data2.childList[0].type
+                        )
+                    );
+                } else {
+                    firstData.childList.push(
+                        createEmptyPane(
+                            firstPaneId,
+                            paneWidth,
+                            paneHeight,
+                            firstData.id,
+                            data2.childList[0].type
+                        )
+                    );
+                }
+            }
+        }
+    } else {
+        console.warn("检查移动窗格参数");
+        return;
+    }
+
+    console.log("nextLayouts", nextLayouts);
+   setTree(nextLayouts)
+
+};
+//外部拖入
   const onCreateArea = (type, position, containerId) => {
     console.log("onCreateArea");
     let nextLayouts = tree;
@@ -29,12 +251,12 @@ const dragAtom = atom(true)
     );
     const paneWidth = isVertical ? 100 : 50;
     const paneHeight = isVertical ? 50 : 100;
-    debugger
     if (isCover) {
         const id = getUuid();
         treeNodeChange(tree, containerId, (item, index, arr) => {
             item.childList = [                        
-                createArea({type})
+                createArea({type,containerId:id,pid:item.id}),
+                
             ];
         });
     } else if (isAdd) {
@@ -78,10 +300,20 @@ const dragAtom = atom(true)
     setTree(nextLayouts)
 
 };
-
+const updateChooseArea=(id)=>{
+  console.log('ID',id)
+  
+           setSetting((s)=>{
+                  s.chooseArea=id===setting.chooseArea?"":id 
+        
+          })
+}
   return (
     <div className={style.DropBoard}>
-      <PaneBox tree={tree[0]} onCreateArea={onCreateArea}
+      <PaneBox tree={tree[0]} 
+      onCreateArea={onCreateArea}
+      resizePane={resizePane}
+      updateChooseArea={updateChooseArea}
       onMoveArea={
         ()=>{console.log('onMoveArea')}
       } 
@@ -92,6 +324,7 @@ const dragAtom = atom(true)
   );
 };
 const PaneBox = (props) => {
+  const {chooseArea} = useAtomValue(domAtom);  
   const [isDragEnter,setIsDragEnter]=useState(false)//是否进入区间
   const [isSelf,setIsSelf]=useState(false)//是否该空间本身拖拽
   const [inPositionPart,setInPositionPart]=useState(false)//拖拽-悬浮画布是否离开
@@ -120,8 +353,7 @@ const PaneBox = (props) => {
     //     boardId:  props.boardId,
     // };
 
-    isSelf = true;
-
+    setIsSelf(true)
     e.stopPropagation();
 };
 useEffect(()=>{
@@ -267,15 +499,15 @@ const  getPaneBoxes = () => {
                   size={getPaneSize(secondBox, firstBox)}
               />
           );
-          // const splitLine = (
-          //     <SplitLine
-          //         key="split-line"
-          //         {...props}
-          //         paneBox={paneBox}
-          //     />
-          // );
-              // return [firstPaneBox, splitLine, secondPaneBox];
-              return [firstPaneBox, secondPaneBox];
+          const splitLine = (
+              <SplitLine
+                  key="split-line"
+                  {...props}
+                  paneBox={paneBox.current}
+              />
+          );
+              return [firstPaneBox, splitLine, secondPaneBox];
+              // return [firstPaneBox, secondPaneBox];
 
       case 1:
           //容器（图、表、筛选器等）
@@ -334,7 +566,7 @@ const getPaneSize = (pane, brotherPane) => {
   }
 };
 const renderArea = () => {
-  const { onCopyArea, onDeleteArea, chooseArea, updateChooseArea,actions } = props;
+  const { onCopyArea, onDeleteArea, updateChooseArea,actions } = props;
   const area = childList[0];
   const size = isfull
       ? {
@@ -347,9 +579,9 @@ const renderArea = () => {
       };
   return (
       <div onClick={() => {
-          updateChooseArea(area.id);
+          updateChooseArea(tree.id);
       }}
-          style={chooseArea === area.id ? {
+          style={chooseArea === tree.id ? {
               border: '1px solid #f5222d',
               width: '100%',
               height: '100%',
@@ -358,10 +590,12 @@ const renderArea = () => {
               {
                   width: '100%',
                   height: '100%',
+                  border: '1px solid rgb(240, 241, 245)',
+
                   // background:'#'+Math.floor(Math.random()*16777215).toString(16)
               }}
-              id={`area-${area.id}`}
-              key={`area-${area.id}`}
+              id={`area-${tree.id}`}
+              key={`area-${tree.id}`}
 
       >
           {area.name}
@@ -403,4 +637,156 @@ const renderArea = () => {
 </div>
   );
 };
+const moveAtom = atom({
+   //鼠标点下的X坐标
+   oldClientX : 0,
+   //鼠标点下的Y坐标
+   oldClientY : 0,
+   oldFirstHeight : 0,
+   oldFirstWidth : 0,
+   oldSecondHeight : 0,
+   oldSecondWidth : 0,
+   value : 0,
+})
+const SplitLine=(props)=> {
+    const setDraggable= useSetAtom(dragAtom);//是否允许拖拽
+
+  const [state, setState] = useAtom(moveAtom); 
+  const { tree } = props;
+  const { childList } = tree;
+
+ const mouseDown = (e) => {
+    console.log('mouseDown')
+
+      /*定义鼠标移动事件*/
+      document.onmousemove = doMouseMove;
+
+      /*定义鼠标抬起事件*/
+      document.onmouseup = doMouseUp;
+
+      let event = e || window.event;
+
+
+
+      const { paneBox, tree } = props;
+
+      const firstBox = paneBox.children[0];
+      const secondBox = paneBox.children[2];
+
+  
+
+      setDraggable(false)
+
+  let value
+      const isVertical = tree.childList[0].height === 100;
+      if (isVertical) {
+          value = tree.childList[0].width;
+      } else {
+          value = tree.childList[0].height;
+      }
+
+      setState(Object.assign(state,{
+        oldClientX :event.clientX,/*获取鼠标按下的地方距离元素左侧和上侧的距离*/
+        oldClientY :event.clientY,
+        oldFirstWidth :firstBox.offsetWidth,
+        oldFirstHeight :firstBox.offsetHeight,
+        oldSecondWidth :secondBox.offsetWidth,
+        oldSecondHeight :secondBox.offsetHeight,
+        value,
+       }))
+      e.stopPropagation();
+  };
+
+ const doMouseMove = (e) => {
+      /*事件兼容*/
+      let event = e || window.event;
+
+      const {
+          paneBox,
+          tree,
+          tree: { childList },
+      } = props;
+      const {oldClientX,oldClientY,oldSecondWidth,oldFirstWidth,oldFirstHeight,oldSecondHeight,}=state
+      //移动后对象的xy坐标
+      let disX = event.clientX -  oldClientX;
+      let disY = event.clientY -  oldClientY;
+      let value;
+      const paneWidth = paneBox.offsetWidth;
+      const paneHeight = paneBox.offsetHeight;
+
+      const isVertical = childList[0].height === 100;
+
+      if (isVertical) {
+          if (disX > 0) {
+              disX =
+                  oldSecondWidth - disX >= 0
+                      ? disX
+                      : oldSecondWidth;
+          } else {
+              disX =
+                  oldFirstWidth + disX >= 0 ? disX : - oldFirstWidth;
+          }
+          value = ((oldFirstWidth + 2 + disX) / paneWidth) * 100;
+      } else {
+          if (disY > 0) {
+              disY =
+                   oldSecondHeight - disY >= 0
+                      ? disY
+                      :  oldSecondHeight;
+          } else {
+              disY =
+                  oldFirstHeight + disY >= 0
+                      ? disY
+                      : -oldFirstHeight;
+          }
+          value = ((oldFirstHeight + 2 + disY) / paneHeight) * 100;
+      }
+
+      props.resizePane(
+          childList[0].id,
+          childList[1].id,
+          value,
+          isVertical
+      );
+
+      setState(Object.assign(state,{
+        value,
+        active:true,
+       }))
+      e.stopPropagation();
+  };
+
+ const doMouseUp = (e) => {
+      document.onmousemove = null;
+      document.onmouseup = null;
+console.log('doMouseUp')
+      const {
+        tree: { childList },
+      } = props;
+      const isVertical = childList[0].height === 100;
+
+      props.resizePane(
+          childList[0].id,
+          childList[1].id,
+          state.value,
+          isVertical
+      );
+
+      setDraggable(true)
+      e.stopPropagation();
+  };
+
+
+ 
+      return (
+          <div
+              className={classnames(style.splitLine,  childList[0].height === 100?
+                  style.isVertical
+              :'')}
+              onMouseDown={mouseDown}
+          />
+      );
+  
+}
+
 export default DropBoard; 

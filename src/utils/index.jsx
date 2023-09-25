@@ -156,7 +156,7 @@ export function debounce(func, delay) {
  * 解释拖拽行为
  * @param {*} position
  */
-  export const explainDragAction = (position) => { 
+  export const explainDragAction = (position) => {
     let isCover = false,
         isAdd = false,
         isFirst = false,
@@ -209,14 +209,6 @@ export const createEmptyPane = (
     pid,
     type,
     childList = [
-        // { 
-        // name: containerId,
-        //  type ,
-        //  id:containerId,
-        // setting:{
-        //     displaySet:{},
-        //     tabs:[]
-        // }}
         createArea({type})
     ]
 ) => ({

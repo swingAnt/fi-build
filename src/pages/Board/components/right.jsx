@@ -69,6 +69,7 @@ const dragAtom = atom(true)
 const  onMoveArea = (sourceConId, currentConId, position) => {
     console.log("onMoveArea");
     let nextLayouts = JSON.parse(JSON.stringify(tree)) ;
+
     const { isCover, isAdd, isFirst, isVertical } = explainDragAction(
         position
     );
@@ -314,9 +315,7 @@ const updateChooseArea=(id)=>{
       onCreateArea={onCreateArea}
       resizePane={resizePane}
       updateChooseArea={updateChooseArea}
-      onMoveArea={
-        ()=>{console.log('onMoveArea')}
-      } 
+      onMoveArea={onMoveArea} 
       size={{ width: "100%", height: "100%" }}
       />
    
@@ -340,12 +339,22 @@ const PaneBox = (props) => {
   const childList=tree?.childList
   const isAreaContainer = childList&&_.isArray(childList) && childList.length === 1;
   const isEmptyContainer = childList&&_.isArray(childList) && childList.length === 0;
+  const getDragImg = () => {
+    let dragImg = null;
+    if (childList && childList.length) {
+        const area = childList[0];
+        dragImg = "";
+    }
+    return dragImg;
+};
   const handleDragStart = (e) => {
-    //Todu 设置拖拽图片
     // const dragImg =  getDragImg();
     // if (dragImg) {
-    //     e.dataTransfer.setDragImage(dragImg, 40, 40);
+        // e.dataTransfer.setDragImage(new Image(), 0, 0);    //Todu 设置拖拽图片
+
     // }
+     e.dataTransfer.setDragImage(new Image(), 0, 0);    //Todu 设置拖拽图片
+
     draftEvent(e, "containerId",  props.tree.id);
     //多页签面板
     // dragInstance.dragSource = {
@@ -604,10 +613,10 @@ const renderArea = () => {
               <a onClick={() => onCopyArea(tree)}>复制</a>
               <a onClick={() => onDeleteArea(tree.id)}>删除</a>
           </div>
-          <div  className={'area-instance-show'}
+          <div  className={style.areaBox}
           // onClick={() => actions.changeItem(area)}
           >
-          
+          666
           </div>
       </div>
   );

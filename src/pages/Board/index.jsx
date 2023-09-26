@@ -3,7 +3,9 @@ import styles from './index.module.scss'
 // import BoardCavas from '@/components/BoardCavas'
 
 import DragTool from './components/left'
-import DropBoard from './components/right'
+// import DropBoard from './components/right'
+// import DropBoard from './components/free'
+import DropBoard from './components/row'
 
 
 export default function ListView(props) {

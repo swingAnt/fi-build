@@ -454,7 +454,7 @@ const  handleDrop = (e) => {
   // }
   const isIE = !!window.ActiveXobject || "ActiveXObject" in window; //判断是否IE浏览器
   let data = dropEvent(e)
-  const type = data.type;
+  const type = data.dragData?.type;
   console.log('data',data)
 
   const sourceConId = data.containerId;

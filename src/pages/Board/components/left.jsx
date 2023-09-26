@@ -9,8 +9,16 @@ const DragComponent = () => {
     setIsDragging(true);
     e.stopPropagation();
     e.dataTransfer.effectAllowed = "move";
-    draftEvent(e, "type", type);
-    // e.stopPropagation();
+    // draftEvent(e, "type", type);
+    // const dragDom=document.querySelector(`.${type}`)
+    //   console.log('dragDomdragDomdragDom',dragDom)  
+    //   console.log('offsetWidth',dragDom.offsetWidth)
+    //   console.log('offsetHeight',dragDom.offsetHeight)
+    //   console.log('offsetTop',dragDom.offsetTop)
+    //   console.log('offsetLeft',dragDom.offsetLeft)
+      //后续替换成图/** 等组合，根据key区分大类
+    //   draftEvent(e, "dragData", {key:'chart',type,lt:Math.floor(dragDom.offsetWidth/2),tp:dragDom.offsetHeight/2});
+    draftEvent(e, "dragData", {key:'chart',type,lt:0,tp:0});
 
 };
   const handleDragEnd = () => {

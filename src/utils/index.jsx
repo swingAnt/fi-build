@@ -104,6 +104,9 @@ export const draftEvent = (e, key, value) => {
 export const dropEvent = (e) => {
     const isIE = !!window.ActiveXobject || "ActiveXObject" in window; //判断是否IE浏览器
     let data = {};
+    console.log('e.data',e)
+
+    console.log('e.dataTransfer.getData("data")',e.dataTransfer.getData("data"))
     //判断是否是IE
     if (isIE) {
         data = JSON.parse(e.dataTransfer.getData("text"));

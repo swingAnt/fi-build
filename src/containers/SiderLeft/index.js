@@ -14,28 +14,31 @@ class SiderLeft extends React.Component {
                 key: "/",
                 icon: React.createElement(BankFilled),
                 label: "自由布局"
-            }, {
-                key: "/ai",
-                icon: React.createElement(BankFilled),
-                label: "ai问答"
-            }, {
-                key: "/home/manage",
-                icon: React.createElement(WindowsFilled),
-                label: "组件管理",
-                children: [{
-                    key: "/home/manage/table",
-                    label: "列表"
-                }, {
-                    key: "/home/manage/form",
-                    label: "表单"
-                }, {
-                    key: "/home/manage/tour",
-                    label: "漫游向导"
-                }, {
-                    key: "404",
-                    label: "404页面"
-                },]
-            }],
+            }, 
+            // {
+            //     key: "/ai",
+            //     icon: React.createElement(BankFilled),
+            //     label: "ai问答"
+            // },
+            //  {
+            //     key: "/home/manage",
+            //     icon: React.createElement(WindowsFilled),
+            //     label: "组件管理",
+            //     children: [{
+            //         key: "/home/manage/table",
+            //         label: "列表"
+            //     }, {
+            //         key: "/home/manage/form",
+            //         label: "表单"
+            //     }, {
+            //         key: "/home/manage/tour",
+            //         label: "漫游向导"
+            //     }, {
+            //         key: "404",
+            //         label: "404页面"
+            //     },]
+            // }
+        ],
             selectedKeys: []
         };
     }

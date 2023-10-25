@@ -31,7 +31,7 @@ export default class Home extends React.Component {
            
                 <div className={styles.layoutMain}>
               
-                    <TopHeader />
+                    {/* <TopHeader /> */}
                     {/* 右边区域 */}
                     <div
                         className={styles.content}

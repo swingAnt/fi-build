@@ -1,120 +1,116 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { getDragData, draftEvent, getUuid } from "@/utils";
 
-const DropBoard = () => {
+const App = () => {
+  const [lists, setLists] = useState([
+    { id: 'list1', items: ['Item 1', 'Item 2', 'Item 3'] },
+    { id: 'list2', items: ['Item 4', 'Item 5', 'Item 6'] },
+  ]);
 
+  function move(index1, index2, arr) {
+    //index1 index2 需要更换的下标
+    arr.splice(index1, 1, ...arr.splice(index2, 1, arr[index1]))
+    return arr
+}
+  const handleDragEnd = (result) => {
+    const { source, destination } = result;
 
-  const [horizontal, setHorizontal] = useState(true);
-  const [list, setList] = useState([{
-    id: 11,
-    content: [{ id: '1', type: 'Item 1' },
-    { id: '2', type: 'Item 2' },
-    { id: '3', type: 'Item 3' },]
-  },
-  {
-    id: 22,
-    content: [
-      { id: '4', type: 'Item 4' },
-      { id: '5', type: 'Item 5' },
-      { id: '6', type: 'Item 6' },
-    ]
-  }])
-  const onDragEnd = (result) => {
-    console.log('result', result)
-    if (!result.destination) {
-      return; // 拖拽未成功，未有有效目的地
+    if (!destination) {
+      return;
     }
-    let target = Array.from(list).filter(l => result.source.droppableId == l.id)[0].content[result.source.index]
-    list.forEach(l => {
-      if (result.source.droppableId == l.id) {
-        const reorderedItems = Array.from(l.content);
-        const [reorderedItem] = reorderedItems.splice(result.source.index, 1);
-        l.content = reorderedItems
-      }
-      if (result.destination.droppableId == l.id) {
-        l.content.splice(result.destination.index, 0, target);
-      }
-    })
+     if(source.droppableId ==="lists"&& destination.droppableId==="lists"){
+      const updatedList = Array.from(lists);
+     const list= move(source.index,destination.index,updatedList)
+     setLists(list);
 
-    setList(list)
+    }else{
+      if (source.droppableId === destination.droppableId) {
+        const updatedList = Array.from(lists);
+        const list = updatedList.find((list) => list.id === source.droppableId);
+        const [removed] = list.items.splice(source.index, 1);
+        list.items.splice(destination.index, 0, removed);
+        setLists(updatedList);
+      } else {
+        const updatedLists = Array.from(lists);
+        const [removed] = updatedLists.find((list) => list.id === source.droppableId).items.splice(source.index, 1);
+        updatedLists.find((list) => list.id === destination.droppableId).items.splice(destination.index, 0, removed);
+        setLists(updatedLists);
+      }
+    }
+   
   };
-  const handleDrop = (e, id, index) => {
-    console.log('handleDrop')
 
-    console.log('e', e)
-    console.log('getDragData', getDragData(e))
-    list.forEach(l => {
-      if (l.id == id) {
-        l.content[index].type = getDragData(e).dragData.type
-      }
-    })
-    debugger
-    setList([...list])
-  }
+  const handleContainerDragEnd = (result) => {
+    const { source, destination } = result;
+
+    if (!destination) {
+      return;
+    }
+
+    const updatedLists = Array.from(lists);
+    const [removed] = updatedLists.splice(source.index, 1);
+    updatedLists.splice(destination.index, 0, removed);
+    setLists(updatedLists);
+  };
+
   return (
-    <div>
-      <a onClick={() => setHorizontal(!horizontal)}>{horizontal ? '横向' : '纵向'}</a>
-
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div style={horizontal ? {} : { display: 'flex' }}>
-          {
-            list.map(l => <Droppable droppableId={l.id}
-              direction={horizontal ? "horizontal" : "vertical"}
+    <DragDropContext onDragEnd={handleDragEnd}>
+    <div className="container">
+        <Droppable droppableId="lists" direction="horizontal" type="container">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="lists-container"
             >
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  style={horizontal ? {
-                    flex: 1,
-                    padding: '8px',
-                    border: '1px solid lightgray',
-                    display: 'flex',
-                    overflowX: 'auto',
-                  } : {
-                    flex: 1,
-                    padding: '8px',
-                    border: '1px solid lightgray',
-                  }}
-                >
-                  {l.content.map((item, index) => (
-                    <Draggable key={item.id} draggableId={item.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={{
-                            padding: '8px',
-                            margin: '4px',
-                            boxSizing: 'border-box',
-                            backgroundColor: snapshot.isDragging ? 'lightblue' : 'lightgray',
-                            width: !horizontal ? '100%' : `${100 / l.content.length}%`,
-                            ...provided.draggableProps.style,
-                          }}
-                        >
+              {lists.map((list, index) => (
+                <Draggable key={list.id} draggableId={list.id} index={index} type="container">
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className="list"
+                    >
+                      <Droppable droppableId={list.id} type="item">
+                        {(provided) => (
                           <div
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => handleDrop(e, l.id, index)}
-                            style={{ width: '100%', height: "100%" }} >{item.type}</div>
-                        </div>
-                      )}
-                    </Draggable>
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className="list-items"
+                          >
+                            <h2>{list.id}</h2>
+                            {list.items.map((item, itemIndex) => (
+                              <Draggable key={item} draggableId={item} index={itemIndex} type="item">
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className="item"
+                                  >
+                                    {item}
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </div>
 
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>)
-          }
-
-        </div>
-      </DragDropContext>
-    </div>
+    </DragDropContext>
   );
 };
 
-export default DropBoard;
-
+export default App;
 

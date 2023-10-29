@@ -49,7 +49,6 @@ const DropBoard = () => {
         l.content[index].type = getDragData(e).dragData.type
       }
     })
-    debugger
     setList([...list])
   }
   return (

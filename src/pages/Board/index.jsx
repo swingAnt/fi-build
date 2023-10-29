@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import styles from './index.module.scss'
 // import BoardCavas from '@/components/BoardCavas'
-
 import DragTool from './components/left'
 import DropBoard1 from './components/right'
 import DropBoard2 from './components/free'
@@ -13,6 +12,7 @@ export default function ListView(props) {
   const DropBoard = boardMap[mode]
   return <>
     <div>
+      
       <a
         style={mode == 0 ? { color: 'red' } : {}}
         onClick={() => {

@@ -41,8 +41,10 @@ const DropBoard = () => {
   };
   const handleDrop = (e, id, index) => {
     console.log('handleDrop')
-
     console.log('e', e)
+    console.log('id', id)
+
+    console.log('list', list)
     console.log('getDragData', getDragData(e))
     list.forEach(l => {
       if (l.id == id) {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { getDragData, draftEvent, getUuid } from "@/utils";
 
 const App = () => {
   const [horizontal, setHorizontal] = useState(true);
@@ -22,6 +23,21 @@ const App = () => {
       { id: '6', type: 'Item 6' },
     ]
   }])
+  const handleDrop = (e, id, index) => {
+    console.log('handleDrop')
+    console.log('e', e)
+    console.log('id', id)
+    console.log('index', index)
+
+    console.log('list', list)
+    console.log('getDragData', getDragData(e))
+    list.forEach(l => {
+      if (l.id == id) {
+        l.content[index].type = getDragData(e).dragData.type
+      }
+    })
+    setList([...list])
+  }
   function move(index1, index2, arr) {
     //index1 index2 需要更换的下标
     arr.splice(index1, 1, ...arr.splice(index2, 1, arr[index1]))
@@ -115,7 +131,10 @@ const App = () => {
                                       ...provided.draggableProps.style,
                                     }}
                                   >
-                                    {item.type}
+                                  <div
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => handleDrop(e, l.id, itemIndex)}
+                            style={{ width: '100%', height: "100%" }} >{item.type}</div>
                                   </div>
                                 )}
                               </Draggable>

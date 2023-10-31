@@ -201,7 +201,6 @@ const DropBoard = () => {
                             }
                         }
                     );
-                    console.log("secondArr", secondArr);
                     firstData.childList = [];
                     firstData.childList[0] = createEmptyPane(
                         secondPaneId,
@@ -308,7 +307,10 @@ const DropBoard = () => {
 
         })
     }
+    console.log("tree[0]", tree[0])
+
     return (
+
         <div className={style.DropBoard}>
             <PaneBox tree={tree[0]}
                 onCreateArea={onCreateArea}

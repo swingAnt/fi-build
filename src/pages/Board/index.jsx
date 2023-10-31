@@ -8,7 +8,7 @@ import DropBoard3 from './components/row'
 import Clock from '@/components/Clock'
 export default function ListView(props) {
   const boardMap = [DropBoard1, DropBoard2, DropBoard3]
-  const [mode, setMode] = useState(2)
+  const [mode, setMode] = useState(1)
   const DropBoard = boardMap[mode]
   return <>
     <div>

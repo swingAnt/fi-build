@@ -136,8 +136,8 @@ export const getUuid = () => {
     return uuid;
 };
 // 初始化PC区域数据
-export const createArea = ({ type }) => {
-    const newArea = { type };
+export const createArea = ({ type,key }) => {
+    const newArea = { type,key };
     console.log('type', type)
     console.log('newArea', newArea)
     if (!newArea) return;
@@ -211,8 +211,9 @@ export const createEmptyPane = (
     height = 100,
     pid,
     type,
+    key,
     childList = [
-        createArea({type})
+        createArea({type,key})
     ]
 ) => ({
     id: containerId,

@@ -4,7 +4,26 @@ import { draftEvent } from "@/utils";
 const DragComponent = () => {
   const [isDragging, setIsDragging] = useState(false);
 
+  const map=[{
+    name:'pie',
+    type:'chart',
+    title:"饼图",
+  },{
+    name:'bar',
+    type:'chart',
+    title:"柱状体",
 
+  },{
+    name:'radar',
+    type:'chart',
+    title:"雷达图",
+
+  },{
+    name:'sunburst',
+    type:'chart',
+    title:"旭日图",
+
+  },]
   const handleDragStart = (key,type, e) => {
     setIsDragging(true);
     e.stopPropagation();
@@ -26,28 +45,18 @@ const DragComponent = () => {
   };
 
   return (<>
-    <div
+  {map.map(item=>  <div
       draggable
-      onDragStart={(e)=>handleDragStart('chart','area_chart',e)}
+      onDragStart={(e)=>handleDragStart(item.type,item.name,e)}
       onDragEnd={handleDragEnd}
       style={{ width:'30px',opacity: isDragging ? 1 : 0.5 }}
       onDragOver={(e) => {
         e.preventDefault();
     }}
     >
-     图
-    </div>
-    <div
-      draggable
-      onDragStart={(e)=>handleDragStart('row','area_chart',e)}
-      onDragEnd={handleDragEnd}
-      style={{ width:'30px',opacity: isDragging ? 1 : 0.5 }}
-      onDragOver={(e) => {
-        e.preventDefault();
-    }}
-    >
-     行
-    </div>
+     {item.title}
+    </div>)}
+   
     </>
   );
 };

@@ -1,39 +1,40 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { getDragData, draftEvent, getUuid } from "@/utils";
+import View from './view'
 
-const App = () => {
+const App = (props) => {
   const [horizontal, setHorizontal] = useState(true);
 
-  const [lists, setLists] = useState([
-    { id: 'list1', items: ['Item 1', 'Item 2', 'Item 3'] },
-    { id: 'list2', items: ['Item 4', 'Item 5', 'Item 6'] },
-  ]);
+
   const [list, setList] = useState([{
     id: '11',
-    content: [{ id: '1', type: 'Item 1' },
-    { id: '2', type: 'Item 2' },
-    { id: '3', type: 'Item 3' },]
+    content: [{ id: '1', type: 'Item 1', key: "", width: 200, height: 200 },
+    { id: '2', type: 'Item 2', key: "", width: 200, height: 200 },
+    { id: '3', type: 'Item 3', key: "", width: 200, height: 200 },]
   },
   {
     id: '22',
     content: [
-      { id: '4', type: 'Item 4' },
-      { id: '5', type: 'Item 5' },
-      { id: '6', type: 'Item 6' },
+      { id: '4', type: 'Item 4', key: "", width: 200, height: 200 },
+      { id: '5', type: 'Item 5', key: "", width: 200, height: 200 },
+      { id: '6', type: 'Item 6', key: "", width: 200, height: 200 },
+    ]
+  },
+  {
+    id: '33',
+    content: [
+      { id: '7', type: 'Item 7', key: "", width: 200, height: 200 },
+      { id: '8', type: 'Item 8', key: "", width: 200, height: 200 },
+      { id: '9', type: 'Item 9', key: "", width: 200, height: 200 },
     ]
   }])
   const handleDrop = (e, id, index) => {
-    console.log('handleDrop')
-    console.log('e', e)
-    console.log('id', id)
-    console.log('index', index)
-
-    console.log('list', list)
-    console.log('getDragData', getDragData(e))
     list.forEach(l => {
       if (l.id == id) {
         l.content[index].type = getDragData(e).dragData.type
+        l.content[index].key = getDragData(e).dragData.key
+
       }
     })
     setList([...list])
@@ -76,6 +77,14 @@ const App = () => {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <a onClick={() => setHorizontal(!horizontal)}>{horizontal ? '横向' : '纵向'}</a>
+      <a onClick={()=>{
+        setList([...list,{
+          id: getUuid(),
+          content: [{ id: getUuid(), type: 'Item 1', key: "", width: 200, height: 200 },
+          { id: getUuid(), type: 'Item 2', key: "", width: 200, height: 200 },
+          { id: getUuid(), type: 'Item 3', key: "", width: 200, height: 200 },]
+        },])
+      }}>添加行</a>
       <div className="container">
         <Droppable droppableId="lists" direction="horizontal" type="container">
           {(provided) => (
@@ -83,7 +92,7 @@ const App = () => {
               ref={provided.innerRef}
               {...provided.droppableProps}
               className="lists-container"
-              style={horizontal ? {} : { display: 'flex' }} 
+              style={horizontal ? {} : { display: 'flex' }}
             >
               {list.map((l, index) => (
                 <Draggable key={l.id} draggableId={l.id} index={index} type="container">
@@ -93,6 +102,7 @@ const App = () => {
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                       className="list"
+                      style={{position:"relative"}}
                     >
                       <Droppable droppableId={l.id} type="item" direction={horizontal ? "horizontal" : "vertical"}
                       >
@@ -113,7 +123,8 @@ const App = () => {
                               border: '1px solid lightgray',
                             }}
                           >
-                            <h2>{l.id}</h2>
+                            {/* <h2>{l.id}</h2> */}
+                            <div style={{position:'absolute',right:'0',top:0}} onClick={()=>{setList(list.filter(o=>o.id!==l.id))}}>删除</div>
                             {l.content.map((item, itemIndex) => (
                               <Draggable key={item.id} draggableId={item.id} index={itemIndex} type="item">
                                 {(provided, snapshot) => (
@@ -123,18 +134,24 @@ const App = () => {
                                     {...provided.dragHandleProps}
                                     className="item"
                                     style={{
-                                      padding: '8px',
                                       margin: '4px',
                                       boxSizing: 'border-box',
                                       backgroundColor: snapshot.isDragging ? 'lightblue' : 'lightgray',
-                                      width: !horizontal ? '100%' : `${100 / l.content.length}%`,
+                                      width: !horizontal ? item.width : `${100 / l.content.length}%`,
+                                      height: item.height,
                                       ...provided.draggableProps.style,
                                     }}
                                   >
-                                  <div
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => handleDrop(e, l.id, itemIndex)}
-                            style={{ width: '100%', height: "100%" }} >{item.type}</div>
+                                    <div
+                                      onDragOver={(e) => e.preventDefault()}
+                                      onDrop={(e) => handleDrop(e, l.id, itemIndex)}
+                                      style={{ width: '100%', height: "100%" }} >
+                                      {!!item.type ? <View
+                                        type={item.type}
+                                        name={item.key}
+                                        themeType={props.themeType}
+                                      /> : "请拖动元素放入内部"}
+                                    </div>
                                   </div>
                                 )}
                               </Draggable>
@@ -152,7 +169,7 @@ const App = () => {
           )}
         </Droppable>
       </div>
- 
+
 
 
       {/* <div className="container">

@@ -6,7 +6,7 @@ import { message, Modal } from "antd";
 import _ from "lodash";
 import classnames from "classnames";
 import { atomWithImmer } from 'jotai-immer'
-
+import View from './view'
 const confirm = Modal.confirm;
 const BORDER_WIDTH = 0;
 const DOUBLE_BORDER_WIDTH = BORDER_WIDTH * 2;
@@ -31,10 +31,9 @@ const domAtom = atomWithImmer({
     chooseArea: ""
 })
 const dragAtom = atom(true)
-const DropBoard = () => {
+const DropBoard = (props) => {
     const [tree, setTree] = useAtom(treeAtom);
     const [setting, setSetting] = useAtom(domAtom)
-
     //更新双方边距
     const resizePane = (firstId, secondId, value, isVertical) => {
         let firstData, secondData, firstIndex, secondIndex, firstArr, secondArr;
@@ -207,7 +206,9 @@ const DropBoard = () => {
                         paneWidth,
                         paneHeight,
                         firstData.id,
-                        data1.childList[0].type
+                        data1.childList[0].type,
+                        data1.childList[0].key
+
                     );
                     if (isFirst) {
                         firstData.childList.unshift(
@@ -216,7 +217,9 @@ const DropBoard = () => {
                                 paneWidth,
                                 paneHeight,
                                 firstData.id,
-                                data2.childList[0].type
+                                data2.childList[0].type,
+                                data2.childList[0].key,
+
                             )
                         );
                     } else {
@@ -226,7 +229,9 @@ const DropBoard = () => {
                                 paneWidth,
                                 paneHeight,
                                 firstData.id,
-                                data2.childList[0].type
+                                data2.childList[0].type,
+                                data2.childList[0].key
+
                             )
                         );
                     }
@@ -242,8 +247,7 @@ const DropBoard = () => {
 
     };
     //外部拖入
-    const onCreateArea = (type, position, containerId) => {
-        console.log("onCreateArea");
+    const onCreateArea = (type, position, containerId, key) => {
         let nextLayouts = tree;
         const { isCover, isAdd, isFirst, isVertical } = explainDragAction(
             position
@@ -254,7 +258,7 @@ const DropBoard = () => {
             const id = getUuid();
             treeNodeChange(tree, containerId, (item, index, arr) => {
                 item.childList = [
-                    createArea({ type, containerId: id, pid: item.id }),
+                    createArea({ type, containerId: id, pid: item.id, key }),
 
                 ];
             });
@@ -268,7 +272,9 @@ const DropBoard = () => {
                     paneWidth,
                     paneHeight,
                     containerId,
-                    oldData.type
+                    oldData.type,
+                    oldData.key,
+
                 );
                 if (isFirst) {
                     item.childList.unshift(
@@ -277,7 +283,8 @@ const DropBoard = () => {
                             paneWidth,
                             paneHeight,
                             containerId,
-                            type
+                            type,
+                            key
                         )
                     );
                 } else {
@@ -287,7 +294,8 @@ const DropBoard = () => {
                             paneWidth,
                             paneHeight,
                             containerId,
-                            type
+                            type,
+                            key
                         )
                     );
                 }
@@ -318,6 +326,7 @@ const DropBoard = () => {
                 updateChooseArea={updateChooseArea}
                 onMoveArea={onMoveArea}
                 size={{ width: "100%", height: "100%" }}
+                themeType={props.themeType}
             />
 
         </div>
@@ -331,12 +340,10 @@ const PaneBox = (props) => {
     const [position, setPosition] = useState(false)//拖拽-悬浮画布显示区间点
     const [isfull, setIsfull] = useState(false)//全屏显示
     const [draggable, setDraggable] = useAtom(dragAtom);//是否允许拖拽
-    const [fullWidth, setFullWidth] = useState(0)
-    const [fullHeight, setFullHeight] = useState(0)
-    const [width, setWidth] = useState(0)
-    const [height, setHeight] = useState(0)
+
     const paneBox = useRef(null);
-    const { tree, onMoveArea, onCreateArea } = props
+    const { tree, onMoveArea, onCreateArea,themeType } = props
+
     const childList = tree?.childList
     const isAreaContainer = childList && _.isArray(childList) && childList.length === 1;
     const isEmptyContainer = childList && _.isArray(childList) && childList.length === 0;
@@ -366,21 +373,19 @@ const PaneBox = (props) => {
         setIsSelf(true)
         e.stopPropagation();
     };
-    useEffect(() => {
-        const resizeWidthHeight = () => {
-            setFullWidth(document.documentElement.clientWidth)
-            setFullHeight(document.documentElement.clientHeight)
-        };
-        setWidth(paneBox.current.offsetWidth - DOUBLE_BORDER_WIDTH)
-        setHeight(paneBox.current.offsetHeight - DOUBLE_BORDER_WIDTH)
-        setFullWidth(document.documentElement.clientWidth)
-        setFullHeight(document.documentElement.clientHeight)
-
-        // window.addEventListener("resize", resizeWidthHeight);
-
-    }, [])
 
 
+    // useEffect(()=>{
+    //     const {
+    //         width: domWidth,
+    //         height: domHeight,
+    //     } = paneBox.current.getBoundingClientRect();
+    //     const newWidth = domWidth - DOUBLE_BORDER_WIDTH;
+    //     const newHeight = domHeight - DOUBLE_BORDER_WIDTH;
+    //     if (!newWidth || !newHeight) return false;
+    //     setHeight(newHeight)
+    //     setWidth(newWidth)
+    // },[height,width])
     const handleDragLeave = (e) => {//离开-状态重置
         e.preventDefault();
         e.stopPropagation();
@@ -456,6 +461,8 @@ const PaneBox = (props) => {
         const isIE = !!window.ActiveXobject || "ActiveXObject" in window; //判断是否IE浏览器
         let data = dropEvent(e)
         const type = data.dragData?.type;
+        const key = data.dragData?.key;
+        debugger
         console.log('data', data)
 
         const sourceConId = data.containerId;
@@ -463,7 +470,7 @@ const PaneBox = (props) => {
             if (sourceConId && sourceConId !== currentConId && position) {
                 onMoveArea && onMoveArea(sourceConId, currentConId, position);
             } else if (type) {
-                onCreateArea && onCreateArea(type, position, currentConId);
+                onCreateArea && onCreateArea(type, position, currentConId, key);
             }
             setPosition("")
             setIsDragEnter(false)
@@ -578,15 +585,8 @@ const PaneBox = (props) => {
     const renderArea = () => {
         const { onCopyArea, onDeleteArea, updateChooseArea, actions } = props;
         const area = childList[0];
-        const size = isfull
-            ? {
-                width: fullWidth,
-                height: fullHeight,
-            }
-            : {
-                width: width,
-                height: height,
-            };
+
+
         return (
             <div onClick={() => {
                 updateChooseArea(tree.id);
@@ -608,16 +608,18 @@ const PaneBox = (props) => {
                 key={`area-${tree.id}`}
 
             >
-                {area.name}
-                {area.type}
-                <div>
+
+                {/* <div>
                     <a onClick={() => onCopyArea(tree)}>复制</a>
                     <a onClick={() => onDeleteArea(tree.id)}>删除</a>
-                </div>
+                </div> */}
                 <div className={style.areaBox}
                 // onClick={() => actions.changeItem(area)}
-                >
-                    666
+                ><View
+                        type={area.type}
+                        name={area.key}
+                        themeType={themeType}
+                    />
                 </div>
             </div>
         );

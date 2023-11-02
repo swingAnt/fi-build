@@ -4,6 +4,8 @@ import { getDragData, draftEvent, getUuid } from "@/utils";
 import { useAtom, atom, useAtomValue, useSetAtom, } from 'jotai'
 import { useEffect, useState, useRef } from "react";
 import classnames from "classnames";
+import View from './view'
+
 
 const dataAtom = atom([])
 const DropBoard = (props) => {
@@ -22,7 +24,7 @@ const DropBoard = (props) => {
         let newData
         if (id) {
             newData = data.map(item => {
-                if (item.id === key) {
+                if (item.id === id) {
 
                     const selfDom = paneBox.current
                     let top = headDom ? headDom.clientHeight : 0;
@@ -34,7 +36,7 @@ const DropBoard = (props) => {
                         x: x > 0 ? x : 0,
                         y: y > 0 ? y : 0,
                         type: type,
-                        key: type,
+                        key: key,
                     }
                 }
                 return item
@@ -52,9 +54,9 @@ const DropBoard = (props) => {
                 x: x > 0 ? x : 0,
                 y: y > 0 ? y : 0,
                 type: type,
-                key: type,
-                width: 100,
-                height: 50
+                key: key,
+                width: 200,
+                height: 200
             })
         }
 
@@ -75,9 +77,9 @@ const DropBoard = (props) => {
     const handleDragEnd = () => {
 
     };
-    const startCreateArea = (key, type, e) => {
-        const dragDom = document.querySelector(`.chart-${key}`)
-        draftEvent(e, "dragData", { id: key, key, type, lt: Math.floor(dragDom.offsetWidth / 2), tp: dragDom.offsetHeight / 2 });
+    const startCreateArea = (id,type,key,  e) => {
+        const dragDom = document.querySelector(`.chart-${id}`)
+        draftEvent(e, "dragData", { id: id, key, type, lt: Math.floor(dragDom.offsetWidth / 2), tp: dragDom.offsetHeight / 2 });
         e.stopPropagation();
 
     };
@@ -211,7 +213,6 @@ const DropBoard = (props) => {
     const handleMouseLeave = (e) => {
         setHovering();
     };
-console.log('stylesRef.current-----',stylesRef.current)
     return (
         <div className={style.DropBoard}
             onDragEnd={handleDragEnd}
@@ -257,7 +258,7 @@ console.log('stylesRef.current-----',stylesRef.current)
 
                         <div
                             draggable={true}
-                            onDragStart={(e) => startCreateArea(area.id, area.key, e)}
+                            onDragStart={(e) => startCreateArea(area.id, area.type, area.key, e,)}
                             key={area.id}
                             className={classnames(style.draggableElement, `chart-${area.id}`)}
                             style={id===area.id?{
@@ -266,13 +267,14 @@ console.log('stylesRef.current-----',stylesRef.current)
                             width: area.width, height: area.height, left: area.x, top: area.y, 
                             background: '#e6f7ff' }}
                               >
+<View
+                        type={area.type}
+                        name={area.key}
+                        themeType={props.themeType}
+                    />
+                            
 
-                            <div
-                            // onMouseDown={e => mouseDown("resize", e)}
-                            >
-                                {area.type}
-
-                            </div>
+                         
                         </div>
                     </div>
                 })
@@ -285,117 +287,3 @@ console.log('stylesRef.current-----',stylesRef.current)
 
 }
 export default DropBoard
-
-
-
-
-
-// import classnames from "classnames";
-// import React, { useState ,useRef} from 'react';
-// import style from "./free.module.scss"
-// function Resizable() {
-
-//   const [styles, setStyles] = useState({
-//     left: 100,
-//     top: 100,
-//     width: 200,
-//     height: 200,
-//   });
-//   const onDotMousedown=(type ,e)=> {
-//     e.stopPropagation()
-//     e.preventDefault()
-//     // 获取鼠标按下的坐标
-//     const downX = e.clientX
-//     const downY = e.clientY
-//     const onMousemove = (e) => {
-//       // 移动的x距离
-//       const disX = e.clientX - downX
-//       // 移动的y距离
-//       const disY = e.clientY - downY
- 
-
-//       // 是否是上方缩放圆点
-//       const hasT = type === 'top'
-//       // 是否是左方缩放圆点
-//       const hasL = type === 'left'
-      
-//       let width = styles.width + (hasL ? -disX : disX)
-//       let height = styles.height + (hasT ? -disY : disY)
-      
-//       // 如果是左侧缩放圆点，修改left位置
-//       let left = styles.left + (hasL ? disX : 0)
-  
-//       // 如果是上方缩放圆点，修改top位置
-//       let top = styles.top + (hasT ? disY : 0)
-
-//         if (['top', 'bottom'].includes(type)) {
-//           // 上下就不改变宽度
-//           width = styles.width
-
-//         } else {
-//           // 左右就不改变高度
-//           height = styles.height
-
-//         }
-
-//       // 处理逆向缩放
-//       if (width < 0) {
-//         width = -width
-//         left -= width
-//       }
-//       if (height < 0) {
-//         height = -height
-//         top -= height
-//       }
-//       setStyles({
-//         left, top, width, height
-//       })
-
-//     }
-  
-   
-    
-//     const onMouseup = (_e) => {
-//       window.removeEventListener('mousemove', onMousemove)
-//       window.removeEventListener('mouseup', onMouseup)
-//     }
-    
-//  // 在添加新的事件监听器之前，先移除旧的事件监听器
-//  window.removeEventListener('mousemove', onMousemove)
-//  window.removeEventListener('mouseup', onMouseup)
-
-//  // 直接在这里添加事件监听器，而不是在mousedown事件处理函数中
-//  window.addEventListener('mousemove', onMousemove)
-//  window.addEventListener('mouseup', onMouseup)
-//   }
-
-
-//   return ( <div className={style.DropBoard}>
-//     <div
-//       style={{ ...styles, position: 'absolute'}}
-//     ><div
-//     className={classnames(style.handle, style.top)}
-//     onMouseDown={(e)=>onDotMousedown('top', e)}
-//   ></div>
-//    <div
-//       className={classnames(style.handle, style.left)}
-//       onMouseDown={(e)=>onDotMousedown('left', e)}
-
-// ></div>
-// <div
-//       className={classnames(style.handle, style.right)}
-//       onMouseDown={(e)=>onDotMousedown('right', e)}
-
-// ></div>
-// <div
-//       className={classnames(style.handle, style.bottom)}
-//       onMouseDown={(e)=>onDotMousedown('bottom', e)}
-
-// ></div>
-//   </div>
- 
-//     </div>
-//   );
-// }
-
-// export default Resizable;

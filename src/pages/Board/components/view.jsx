@@ -4,7 +4,9 @@ import { getDragData, draftEvent, getUuid } from "@/utils";
 import { useAtom, atom, useAtomValue, useSetAtom, } from 'jotai'
 import { useEffect, useState, useRef } from "react";
 import classnames from "classnames";
-import { Pie, Bar, Radar, Sunburst } from './charts'
+import { Pie, Bar, Radar, Sunburst, Line } from './charts'
+import { Input, RangePicker ,Select,Create,Table} from './antds'
+
 import 'bbb'
 import darkTheme from '@/assets/theme/dark.json';
 import vintageTheme from '@/assets/theme/vintage.json';
@@ -14,31 +16,53 @@ echarts.registerTheme('dark', darkTheme);
 echarts.registerTheme('vintage', vintageTheme);
 echarts.registerTheme('wonderland', wonderlandTheme);
 const View = (props) => {
-    const { type, name,themeType } = props
+    const { type, name, themeType,disabled } = props
 
     const getChar = () => {
         if ('chart' === name) {
             const map = {
                 "pie": <Pie
-                themeType={themeType}
-                echarts={echarts}
+                    themeType={themeType}
+                    echarts={echarts}
                 ></Pie>,
                 "bar": <Bar
-                themeType={themeType}
-                echarts={echarts}
+                    themeType={themeType}
+                    echarts={echarts}
 
                 ></Bar>,
                 "radar": <Radar
-                themeType={themeType}
-                echarts={echarts}
+                    themeType={themeType}
+                    echarts={echarts}
 
                 ></Radar>,
                 "sunburst": <Sunburst
-                themeType={themeType}
-                echarts={echarts}
-                ></Sunburst>
+                    themeType={themeType}
+                    echarts={echarts}
+                ></Sunburst>,
+                "line": <Line
+                    themeType={themeType}
+                    echarts={echarts}
+                ></Line>,
 
 
+            }
+            return map[type] || ""
+        } else if ('antd' === name) {
+            const map = {
+                "input": <Input
+                disabled={disabled}
+                ></Input>,
+                "rangePicker": <RangePicker
+                disabled={disabled}
+                ></RangePicker>,
+                "select": <Select
+                disabled={disabled}
+                ></Select>,
+                "create": <Create
+                disabled={disabled}
+                ></Create>,
+                "table": <Table
+                ></Table>,
             }
             return map[type] || ""
         }

@@ -2,14 +2,12 @@
     width: 100%;
     height: 100%;
     position: relative;
-    background: rgba(0, 0, 0, 0.05);
+    background: #c7c7c717;
+
     .draggableElement {
-        // position: absolute;
-        // background-color: #ccc;
-        // resize: both;
-        // overflow: hidden;
+      &:hover{
+        z-index: 1000;
       }
-      
       .handle {
         z-index: 999;
         float: left;
@@ -52,4 +50,6 @@
         transform: translateY(-50%);
       }
       
+      }
+   
 }

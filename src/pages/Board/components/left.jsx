@@ -66,6 +66,13 @@ const DragComponent = () => {
     width:400,
     height:450,
   },
+  {
+    name:'drawing',
+    type:'drawing',
+    title:"画板",
+    width:400,
+    height:450,
+  },
 ]
   const handleDragStart = (item, e) => {
     setIsDragging(true);

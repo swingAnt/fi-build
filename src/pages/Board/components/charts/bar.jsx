@@ -53,8 +53,6 @@ const Bar = (props) => {
           // 当父容器尺寸变化时，调用echarts的resize方法
           window.requestAnimationFrame(() => {
             if (myChart && myChart.resize) {
-              debugger
-
               myChart.resize();
             }
           });        }
